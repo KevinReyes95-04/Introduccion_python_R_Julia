@@ -1,0 +1,197 @@
+
+---
+title: "Taller 4 de Programación para SIG"
+author: "Kevin Orlando Reyes Mosquera"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    code-fold: show
+    code-tools: true
+    smooth-scroll: true
+    css: estilos.css
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+execute:
+  echo: true
+  warning: false
+---
+
+# Introducción
+
+Este documento presenta una introducción práctica al uso de Python para análisis de datos en contexto SIG. El enfoque se centra en ejecutar comandos básicos, interpretar resultados en consola y construir una lectura analítica de los datos generados.
+
+::: {.callout-note title="Objetivo del taller"}
+Aplicar operaciones básicas de programación para organizar, transformar y analizar datos. 
+:::
+
+## Alcance del capítulo
+En este capítulo aprenderemos a:
+
+- Acceder a la ayuda y documentación básica en cada lenguaje.
+- Ejecutar comandos simples y entender su salida.
+- Reconocer tipos de objetos y estructuras básicas.
+- Comparar cómo Python, R y Julia resuelven tareas similares.
+
+---
+
+# Ejercicio 1: Vectores y Matemáticas
+
+## Código desarrollado
+
+```{python}
+# Importacion de librerias
+import numpy as np
+import pandas as pd 
+
+# Definición de variables 
+Estaciones = [ "Honda", "Puerto Berrío", "Barrancabermeja", "Puerto Wilches", "Calamar"]
+Caudalesm3s = [1500, 2100, 2800, 3200, 4500]
+print("Estaciones:", Estaciones)
+print("Caudales (m3/s):", Caudalesm3s)
+
+# Calculo promedio y media
+promedio_caudal = sum(Caudalesm3s) / len(Caudalesm3s)
+print("Promedio de caudal (m3/s):", promedio_caudal)
+
+# Calculo del caudal máximo y mínimo
+caudal_maximo = max(Caudalesm3s)
+caudal_minimo = min(Caudalesm3s)
+print("Caudal máximo (m3/s):", caudal_maximo)
+print("Caudal mínimo (m3/s):", caudal_minimo)
+
+# Caudales en litros por segundo usando vectorizacion
+caudales_lps = np.array(Caudalesm3s) * 1000
+print("Caudales (L/s):", caudales_lps)
+
+# Listros pos segundo con separacion de miles
+caudales_lps_formateados = np.array([f"{caudal:,.0f}" for caudal in caudales_lps])
+print("Caudales (L/s) formateados:", caudales_lps_formateados)
+
+# Porcentaje de caudal respecto al total con 2 decimales
+porcentaje_caudal = (np.array(Caudalesm3s) / sum(Caudalesm3s)) * 100
+print("Porcentaje de caudal respecto al total (%):", np.round(porcentaje_caudal, 2))
+```
+
+
+## Análisis del ejercicio
+
+- El uso de listas permite almacenar de forma organizada los nombres de las estaciones y sus respectivos caudales, facilitando el manejo de la información hidrológica.
+- Las funciones integradas como `sum()`, `len()`, `max()` y `min()` permiten realizar cálculos estadísticos básicos (promedio y valores extremos) de manera clara y eficiente.
+- La conversión a arreglos de NumPy optimiza los cálculos mediante vectorización, permitiendo transformar los caudales de m³/s a L/s sin necesidad de ciclos explícitos, lo que mejora la eficiencia y legibilidad del código.
+- El formateo con separadores de miles mejora la presentación de resultados, haciendo que los valores grandes sean más fáciles de interpretar.
+- El uso de np.round() asegura que los resultados porcentuales tengan una presentación uniforme con dos decimales, favoreciendo la claridad y precisión en la comunicación de los datos. 
+
+### Sobre el Ejercicio 1 (Vectorización)
+¿Qué sucedería si creas `caudales_m3s` como una lista nativa (`[1500, 2100, ...]`) y la multiplicas directamente por 1000 (`caudales_m3s * 1000`)?
+
+```{python}
+#| error: true
+Caudalesm3s = [1500, 2100, 2800, 3200, 4500]
+caudales_lps = Caudalesm3s * 1000
+print("Caudales (L/s):", caudales_lps)
+```
+
+::: {.callout-important title="Interpretación"}
+El resultado no es el esperado para conversión de unidades. En una lista nativa de Python, el operador `*` repite la lista completa en lugar de multiplicar elemento a elemento.  
+Para obtener la conversión correcta, se debe usar un arreglo de NumPy o una comprensión de listas.
+:::
+
+---
+
+# Ejercicio 2: DataFrames y Filtrado
+
+## Código desarrollado
+
+```{python}
+import pandas as pd 
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Creacion de dataframe de calidad de aire 
+
+df_aire = pd.DataFrame({
+    "Estacion": ["Carvajal", "Kennedy", "Fontibón", "Suba", "Usaquén"],
+    "PM25": [55, 42, 38, 15, 12],
+    "PM10": [20, 40, 30, 50, 35],
+    "NO2": [15, 30, 20, 40, 25]
+})
+print("DataFrame de Calidad del Aire:")
+print(df_aire)
+
+
+# Resumen tecnico del datframe 
+print("\nResumen técnico del DataFrame:")
+print(df_aire.info())
+
+# Estadísticas descriptivas del dataframe
+print("\nEstadísticas descriptivas del DataFrame:")
+print(df_aire.describe())
+
+# Filtrado de alertas mayores a 15
+df_alerta = df_aire [(df_aire["PM25"] > 15)]
+print("\nEstaciones con PM2.5 mayor a 15:")
+print(df_alerta[["Estacion", "PM25"]])
+
+# Asignacion de valor critico de PM2.5
+df_aire["Alerta_PM25"] = np.where(df_aire["PM25"] > 15, "Crítico", "Normal")
+print("\nDataFrame con Alerta de PM2.5:")
+print(df_aire[["Estacion", "PM25", "Alerta_PM25"]])
+
+# Creacion de grafico de barras para PM2.5
+plt.figure(figsize=(10, 5))
+plt.bar(df_aire["Estacion"], df_aire["PM25"], color="purple")
+plt.xlabel("Estación")
+plt.ylabel("PM2.5 (μg/m³)")
+plt.title("Calidad del Aire - PM2.5 por Estación")
+plt.xticks(rotation=0)
+plt.tight_layout()
+plt.show()
+```
+
+## Análisis del ejercicio
+
+- La creación de un `DataFrame` con `pandas` permite organizar los datos de manera estructurada en columnas tipadas, facilitando el acceso, filtrado y transformación de la información.
+- El método `info()` proporciona un resumen técnico del DataFrame, mostrando el número de entradas, tipos de datos y valores nulos, lo que nos ayuda a evaluar la calidad y estructura de los datos antes de realizar análisis.
+- El método `describe()` muestra estadísticas descriptivas básicas (media, desviación estándar, mínimos y máximos) para columnas numéricas, clave en análisis exploratorio.
+- El filtrado mediante condiciones booleanas permite identificar rápidamente registros que cumplen criterios específicos.
+- La asignación de una nueva columna con `np.where()` permite categorizar la información y hacerla más útil para la toma de decisiones.
+- La visualización con `matplotlib` fortalece la comunicación de resultados al ofrecer una lectura comparativa inmediata entre estaciones.
+
+
+## Extracción de las tres primeras estaciones
+```{python}
+import pandas as pd
+
+df_aire = pd.DataFrame({
+    "Estacion": ["Carvajal", "Kennedy", "Fontibón", "Suba", "Usaquén"],
+    "PM25": [55, 42, 38, 15, 12],
+    "PM10": [20, 40, 30, 50, 35],
+    "NO2": [15, 30, 20, 40, 25]
+})
+print("DataFrame de Calidad del Aire:")
+print(df_aire)
+
+# Extraer las tres primeras estaciones
+df_tres_primeras = df_aire.iloc[0:3]
+print("\nLas tres primeras estaciones:")
+print(df_tres_primeras)
+```
+
+::: {.callout-tip title="Respuesta breve"}
+En Python, la indexación es Base-0: el primer elemento está en posición `0`.  
+Por eso, `iloc[0:3]` incluye los índices `0`, `1` y `2`, y **excluye** el límite superior `3`.  
+La regla general de slicing es: incluye el valor de inicio, excluye el valor final.
+:::
+
+---
+
+# Conclusiones
+
+- Las operaciones vectorizadas mejoran precisión y eficiencia frente a estructuras nativas para cálculos numéricos.
+- `pandas` permite pasar de datos tabulares crudos a información  mediante filtros, estadísticas y nuevas variables categóricas.
+- La combinación de análisis en consola y visualización gráfica facilita comunicar hallazgos de forma técnica y comprensible para públicos no especialistas.
